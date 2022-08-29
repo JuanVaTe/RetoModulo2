@@ -36,6 +36,7 @@ from sklearn.model_selection import train_test_split
 # La biblioteca de scikit learn solamente se va a utilizar para modularizar los datos
 
 # Ahora leemos nuestro data-set
+# Fuente: https://www.kaggle.com/datasets/zzettrkalpakbal/full-filled-brain-stroke-dataset
 
 stroke_data = pd.read_csv("Data/full_data.csv")
 
@@ -69,7 +70,7 @@ alpha = 1e-5
 
 theta = [1, 1]
 
-iteration = 10000
+iteration = 1000
 
 for i in range(iteration):
     accumDelta = []
@@ -92,6 +93,10 @@ print("=============================================")
 
 # Ahora que ya tenemos nuestro modelo de regresion logistica, ahora lo vamos
 # a evaluar con otros datos que no fueron utilizados para entrenar el modelo
+# Asimismo, sacaremos los valores necesarios para crear nuestra matriz de
+# confusion para este modelo
+
+mat_conf = [[0, 0], [0, 0]]
 
 nj = len(stroke_test_x)
 j1 = []
@@ -100,7 +105,13 @@ for x_v, y_v in zip(stroke_test_x, stroke_test_y):
     j = j_1(x_v, y_v, theta)
     j1.append(j)
 
-print("=============================================")
 print("Valor de costo promedio")
 print(-1 * (sum(j1) / nj))
 print("=============================================")
+
+# Ahora sacaremos diferentes metricas para poder medir el rendimiento del modelo
+# Estas metricas las usaremos para comparar los diferentes modelos que creemos.
+
+matriz_conf = [[]]
+
+
