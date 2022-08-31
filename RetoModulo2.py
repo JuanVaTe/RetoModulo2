@@ -26,10 +26,8 @@
 # ==============================================================================================
 
 # Importamos bibliotecas
+import modelos
 
-import math as m
-
-import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -57,61 +55,128 @@ stroke_y = stroke_data["stroke"]
 
 stroke_train_x, stroke_test_x, stroke_train_y, stroke_test_y = train_test_split(stroke_x, stroke_y, random_state=1)
 
-# Definimos funcion de hipotesis y funcion de costo
+# Nuestras funciones de hipotesis y costo se encuentran en el modulo de 'modelos.py'
+# Se utilizaron los siguientes:
+# h1 = lambda x, theta: 1 / (1 + m.exp(theta[0] + theta[1] * x))
+# j_1 = lambda x, y, theta: (y * m.log(h1(x, theta))) + ((1 - y) * (m.log(1 - h1(x, theta))))
 
-h1  = lambda x, theta: 1 / (1 + m.exp(theta[0] + theta[1] * x))
-j_1 = lambda x, y, theta: (y * m.log(h1(x, theta))) + ((1 - y) * (m.log(1 - h1(x, theta))))
+# Implementacion del modelo de regresion logistica
+# La funcion de regresion logistica se encuentra en el modulo de 'modelos.py'
 
-# Creacion de modelo de regresion logistica
-
-n = len(stroke_train_y)
+theta_edad = [1, 1]
 
 alpha = 1e-5
 
-theta = [1, 1]
+theta_edad = modelos.regresion_logistica_unidim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=1000, theta=theta_edad)
 
-iteration = 1000
-
-for i in range(iteration):
-    accumDelta = []
-    accumDeltaX = []
-
-    for x_i, y_i in zip(stroke_train_x, stroke_train_y):
-        accumDelta.append(h1(x_i, theta) - y_i)
-        accumDeltaX.append((h1(x_i, theta) - y_i) * x_i)
-
-    sJt0 = sum(accumDelta)
-    sJt1 = sum(accumDeltaX)
-
-    theta[0] = theta[0] - (alpha/n) * sJt0
-    theta[1] = theta[1] - (alpha / n) * sJt1
-
+# Impresion de resultados
 print("=============================================")
 print("Valores de theta para modelo usando 'edad'")
-print(theta)
-print("=============================================")
+print(theta_edad)
 
-# Ahora que ya tenemos nuestro modelo de regresion logistica, ahora lo vamos
+# Ahora que ya tenemos nuestro modelo de regresion logistica lo vamos
 # a evaluar con otros datos que no fueron utilizados para entrenar el modelo
 # Asimismo, sacaremos los valores necesarios para crear nuestra matriz de
 # confusion para este modelo
+# (Los positivos seran los 1's y los negativos los 0's)
+# La implementacion de la funcion de costo y obtencion de matriz de confusion se
+# encuentran en el modulo 'modelos.py'
 
-mat_conf = [[0, 0], [0, 0]]
+costo_promedio_edad, mat_conf_edad = modelos.funcion_costo_unidimensional(stroke_test_x, stroke_test_y, theta_edad)
 
-nj = len(stroke_test_x)
-j1 = []
-
-for x_v, y_v in zip(stroke_test_x, stroke_test_y):
-    j = j_1(x_v, y_v, theta)
-    j1.append(j)
-
-print("Valor de costo promedio")
-print(-1 * (sum(j1) / nj))
 print("=============================================")
+print("Valor de costo promedio")
+print(costo_promedio_edad)
+print("=============================================")
+print("Matriz de confusion")
+print(mat_conf_edad)
 
 # Ahora sacaremos diferentes metricas para poder medir el rendimiento del modelo
 # Estas metricas las usaremos para comparar los diferentes modelos que creemos.
+# La obtencion de las metricas de rendimiento se encuentra en el modulo 'modelos.py'
 
-matriz_conf = [[]]
+exactitud_edad, precision_edad, exhaustividad_edad, puntaje_F1_edad = modelos.metricas_rendimiento(mat_conf_edad)
+
+print("=============================================")
+print("Metricas de rendimiento para caracteristica 'edad'")
+print(f"Exactitud     : {exactitud_edad}")
+print(f"Precision     : {precision_edad}")
+print(f"Exhaustividad : {exhaustividad_edad}")
+print(f"Puntaje F1    : {puntaje_F1_edad}")
+print("=============================================\n\n\n")
 
 
+# Aunque la exactitud nos diga que nuestro modelo puede llegar a ser bueno, todas las
+# demas metricas se encuentran en el suelo. Nuestro modelo predice que absolutamente
+# todas las personas no tienen riesgo de apoplejia.
+
+# Segunda caracteristica: fumadores
+
+stroke_x = stroke_data["smoking_status"]
+stroke_y = stroke_data["stroke"]
+
+# Antes de poder empezar a implementar un modelo de regresion logistica, debemos
+# convertir nuestros datos cualitativos a datos numericos binarios. Para esto,
+# pandas cuenta con una funcion que nos puede ayudar.
+
+# Primero vemos los datos unicos con los que cuenta nuestro data-frame
+
+print("=============================================")
+print("Valores unicos en caracteristca de 'fumador'")
+print(pd.unique(stroke_x))
+
+# Ya que tenemos datos incompletos, vamos a quitarlos para no contaminar nuestro
+# modelo de regresion
+# Tambien tendremos que quitar estos datos de nuestra variable dependiente para
+# que se mantengan con la misma cantidad de datos
+
+stroke_data_smoking = pd.concat([stroke_x, stroke_y], axis=1)
+stroke_data_smoking = stroke_data_smoking[stroke_data_smoking['smoking_status'] != 'Unknown'].reset_index(drop=True)
+
+# Debido a que la variable cualitativa 'smoking_status' tiene un dominio mayor
+# de 2, es necesario crear una columna para cada valor unico.
+# Afortunadamente pandas cuenta con una funcon para ayudarnos con eso
+
+stroke_data_smoking = pd.concat([pd.get_dummies(stroke_data_smoking['smoking_status'], drop_first=True), stroke_data_smoking], axis=1).drop('smoking_status', axis=1)
+
+# Ahora, vamos a separar nuevamente este nuevo data-frame para obtener nuestras variables
+# independientes y dependientes
+
+stroke_x = stroke_data_smoking.drop('stroke', axis=1)
+stroke_y = stroke_data_smoking['stroke']
+
+# Por ultimo, vamos a modularizar para que nuestro modelo sea validado con datos que no se
+# utilizaron para entrenarlo
+
+stroke_train_x, stroke_test_x, stroke_train_y, stroke_test_y = train_test_split(stroke_x, stroke_y, random_state=1)
+
+# Ahora vamos a implementar un modelo de regresion logistica. Puede que la primera impresion
+# nos indique que, ya que fueron 3 valores posibles los que pudo tomar la variable de 'smoking_status',
+# la realidad es que pandas nos hizo solamente 2 columnas. Pero no es de preocuparse ya que
+# para representar a la tercera posibilidad, ambos valores que tienen una columna deben de tener un
+# 0. De esta forma nos ahorramos mucho poder computacional sin sacrificar nada.
+
+# Ahora implementaremos una regresion logistica bidimensional ('modelos.py')
+
+theta_smoking = [1, 1, 1]
+
+alpha = 1e-5
+
+theta_smoking = modelos.regresion_logistica_bidim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=10000, theta=theta_smoking)
+
+# Impresion de resultados
+print("=============================================")
+print("Valores de theta para modelo usando 'smoking'")
+print(theta_smoking)
+
+# Ahora sacaremos el costo promedio de la funcion de hipotesis
+# junto con su matriz de confusion ('modelos.py')
+
+costo_promedio_smoking, mat_conf_smoking = modelos.funcion_costo_bidimensional(stroke_test_x, stroke_test_y, theta_smoking)
+
+print("=============================================")
+print("Valor de costo promedio")
+print(costo_promedio_edad)
+print("=============================================")
+print("Matriz de confusion")
+print(mat_conf_edad)
