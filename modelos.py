@@ -1,7 +1,7 @@
 # ==============================================================================================
 # Autor: Juan Carlos Varela Tellez
 # Fecha de inicio: 30/08/2022
-# Fecha de finalizacion: ?
+# Fecha de finalizacion: 31/08/2022
 # ==============================================================================================
 # Este codigo es un modulo de funciones auxiliares para el archivo 'RetoModulo2.py'
 
@@ -145,8 +145,6 @@ def regresion_logistica_tridim(datos_x, datos_y, alpha, iteration, theta):
             accumDeltaX.append((h3(x_i, x2_i, x3_i, theta) - y_i) * x_i)
             accumDeltaX2.append((h3(x_i, x2_i, x3_i, theta) - y_i) * x2_i)
             accumDeltaX3.append((h3(x_i, x2_i, x3_i, theta) - y_i) * x3_i)
-
-            print("Llegue 2")
 
         sJt0 = sum(accumDelta)
         sJt1 = sum(accumDeltaX)

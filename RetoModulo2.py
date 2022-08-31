@@ -1,7 +1,7 @@
 # ==============================================================================================
 # Autor: Juan Carlos Varela Tellez
 # Fecha de inicio: 24/08/2022
-# Fecha de finalizacion: ?
+# Fecha de finalizacion: 31/08/2022
 # ==============================================================================================
 #
 # ==============================================================================================
@@ -28,6 +28,7 @@
 # Importamos bibliotecas
 import modelos
 
+import time
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -46,7 +47,7 @@ stroke_data = pd.read_csv("Data/full_data.csv")
 # entre caracteristicas que generalmente se consideran relevantes contra caracteristicas
 # que normalmente no se considerar relevantes.
 
-# Primera caracteristica: Edad
+# Primera caracteristica 'edad'
 
 stroke_x = stroke_data["age"]
 stroke_y = stroke_data["stroke"]
@@ -162,7 +163,7 @@ theta_smoking = [1, 1, 1]
 
 alpha = 1e-5
 
-theta_smoking = modelos.regresion_logistica_bidim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=10000, theta=theta_smoking)
+theta_smoking = modelos.regresion_logistica_bidim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=500, theta=theta_smoking)
 
 # Impresion de resultados
 print("=============================================")
@@ -176,7 +177,197 @@ costo_promedio_smoking, mat_conf_smoking = modelos.funcion_costo_bidimensional(s
 
 print("=============================================")
 print("Valor de costo promedio")
-print(costo_promedio_edad)
+print(costo_promedio_smoking)
 print("=============================================")
 print("Matriz de confusion")
-print(mat_conf_edad)
+print(mat_conf_smoking)
+
+# Ahora sacaremos las metricas de rendimiento de este modelo ('modelos.py')
+
+exactitud_smoking, precision_smoking, exhaustividad_smoking, puntaje_F1_smoking = modelos.metricas_rendimiento(mat_conf_smoking)
+
+print("=============================================")
+print("Metricas de rendimiento para caracteristica 'smoking'")
+print(f"Exactitud     : {exactitud_smoking}")
+print(f"Precision     : {precision_smoking}")
+print(f"Exhaustividad : {exhaustividad_smoking}")
+print(f"Puntaje F1    : {puntaje_F1_smoking}")
+print("=============================================\n\n\n")
+
+
+# Desafortunadamente, este modelo tiene el mismo rendimiento que el anterior.
+# Lo que podemos inferir viendo el data-set con el cual estamos trabajando
+# es que la mayoria de los datos indican que la persona no tuvo apoplejia, entonces
+# nuestros modelos aprenden eso. Esto es ya que nuestros modelos son simples
+# y se necesitaria un mejor metodo o modelo para poder empezar a predecir de
+# forma correcta.
+
+# Tercera caracteristica: 'residence_type' (no relevante)
+
+# La intuicion nos indica que esta caracteristica no deberia tener tanto peso
+# como la edad o si la persona fumaba. Para poder asegurarnos de esto, vamos
+# a hacer un modelo de regresion logistica para comparar su rendimiento
+
+stroke_x = stroke_data["Residence_type"]
+stroke_y = stroke_data["stroke"]
+
+# Ahora vemos los datos unicos con los que cuenta nuestro data-frame
+
+print("=============================================")
+print("Valores unicos en caracteristca de 'Residence_type'")
+print(pd.unique(stroke_x))
+
+# Afortunadamente, solamente hay 2 posibilidades que nuestra caracteristica
+# puede tomar. entonces vamos a cambiar nuestra columna a una columna binaria
+# para poder ser utilizada por nuestro modelo de regresion logistica
+
+stroke_x = pd.get_dummies(stroke_x, drop_first=True)
+stroke_x = pd.Series(stroke_x['Urban'])  # Regresarlo a una serie de pandas en vez de un data-frame
+
+# Despues, vamos a modularizar nuestros datos para poder validarlo con
+# datos que no fueron utilizados para entrenar al modelo
+
+stroke_train_x, stroke_test_x, stroke_train_y, stroke_test_y = train_test_split(stroke_x, stroke_y, random_state=1)
+
+# Es tiempo de implementar un modelo de regresion logistica unidimensional ('modelos.py')
+
+theta_residence = [1, 1]
+
+alpha = 1e-5
+
+theta_residence = modelos.regresion_logistica_unidim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=500, theta=theta_residence)
+
+# Impresion de resultados
+print("=============================================")
+print("Valores de theta para modelo usando 'residence'")
+print(theta_residence)
+
+# Ahora sacaremos el costo promedio de la funcion de hipotesis
+# junto con su matriz de confusion ('modelos.py')
+
+costo_promedio_residence, mat_conf_residence = modelos.funcion_costo_unidimensional(stroke_test_x, stroke_test_y, theta_residence)
+
+print("=============================================")
+print("Valor de costo promedio")
+print(costo_promedio_residence)
+print("=============================================")
+print("Matriz de confusion")
+print(mat_conf_residence)
+
+# Ahora sacaremos las metricas de rendimiento de este modelo ('modelos.py')
+
+exactitud_residence, precision_residence, exhaustividad_residence, puntaje_F1_residence = modelos.metricas_rendimiento(mat_conf_residence)
+
+print("=============================================")
+print("Metricas de rendimiento para caracteristica 'residence'")
+print(f"Exactitud     : {exactitud_residence}")
+print(f"Precision     : {precision_residence}")
+print(f"Exhaustividad : {exhaustividad_residence}")
+print(f"Puntaje F1    : {puntaje_F1_residence}")
+print("=============================================\n\n\n")
+
+# Podemos observar el mismo fenomeno donde nuestro modelo predice que
+# no hay peligro alguno de apoplejia. Aunque estamos utilizando una variable
+# poco relevante, esto nos indica que podriamos necesitar un modelo mas complejo.
+
+# Modelo combinado: 'edad' y 'smoking'
+
+# Para poder crear un modelo mas complejo, necesitamos contemplar mas caracteristicas,
+# es por eso que vamos a utilizar las caracteristicas que consideramos mas relevantes
+# y vamos a usarlas al mismo tiempo en un nuevo modelo
+
+stroke_data_comb = stroke_data[['age', 'smoking_status', 'stroke']]
+
+# Vamos a eliminar nuevamente las filas con un valor de 'Unknown' en la columna
+# de 'smoking_status'
+
+stroke_data_comb = stroke_data_comb[stroke_data_comb['smoking_status'] != 'Unknown'].reset_index(drop=True)
+
+# Ahora sacaremos nuevamente las columnas necesarias para poder utilizar la variable
+# cualitativa de 'smoking_status'
+
+stroke_data_comb = pd.concat([pd.get_dummies(stroke_data_comb['smoking_status'], drop_first=True), stroke_data_comb], axis=True).drop('smoking_status', axis=True)
+
+# Con este proceso ya podemos obtener los datos para poder empezar a implementar nuestro
+# modelo de regresion
+
+stroke_x = stroke_data_comb.drop('stroke', axis=1)
+stroke_y = stroke_data_comb['stroke']
+
+# Modularizamos las variables para validar el modelo sin utilizar datos que fueron usados
+# para entrenar al modelo
+
+stroke_train_x, stroke_test_x, stroke_train_y, stroke_test_y = train_test_split(stroke_x, stroke_y, random_state=1)
+
+# Implementamos un modelo de regresion logistica tridimensional
+
+theta_comb = [1, 1, 1, 1]
+
+alpha = 1e-5
+
+theta_comb = modelos.regresion_logistica_tridim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=500, theta=theta_comb)
+
+# Impresion de resultados
+print("=============================================")
+print("Valores de theta para modelo usando 'edad' y 'smoking'")
+print(theta_comb)
+
+# Ahora sacaremos el costo promedio de la funcion de hipotesis
+# junto con su matriz de confusion ('modelos.py')
+
+costo_promedio_comb, mat_conf_comb = modelos.funcion_costo_tridimensional(stroke_test_x, stroke_test_y, theta_comb)
+
+print("=============================================")
+print("Valor de costo promedio")
+print(costo_promedio_comb)
+print("=============================================")
+print("Matriz de confusion")
+print(mat_conf_comb)
+
+# Ahora sacaremos las metricas de rendimiento de este modelo ('modelos.py')
+
+exactitud_comb, precision_comb, exhaustividad_comb, puntaje_F1_comb = modelos.metricas_rendimiento(mat_conf_comb)
+
+print("=============================================")
+print("Metricas de rendimiento para caracteristica 'residence'")
+print(f"Exactitud     : {exactitud_comb}")
+print(f"Precision     : {precision_comb}")
+print(f"Exhaustividad : {exhaustividad_comb}")
+print(f"Puntaje F1    : {puntaje_F1_comb}")
+print("=============================================")
+
+# Incluso utilizando diferentes caracteristicas, si el modelo sigue siendo simple,
+# vemos que tiene sus limitaciones. Para poder resolver y predecir complicaciones
+# como estas es necesario utilizar metodos mas optimos y poderosos.
+
+# Conclusion
+
+# Es importante no casarse con solamente un tipo de modelo para resolver distintos
+# problemas. Aunque en este codigo se utilizaron modelos muy basicos, si se intenta
+# resolver todos los problemas con la misma herramienta, no importa lo robusta o
+# poderosa, no siempre va a dar el mejor resultado.
+
+# EXTRA: comparacion con biblioteca scikit-learn
+
+# Vamos a ver que tanto erro nuestro modelo en comparacion con un modelo optimizado
+
+# Importamos regresion logistica
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report
+
+# La implementamos con nuestros datos que utilizamos en el ultimo modelo
+
+logisticRegModel = LogisticRegression(class_weight='balanced')
+logisticRegModel.fit(stroke_train_x, stroke_train_y)
+
+# Sacamos las metricas para poder comparar con los otros modelos
+
+predicciones = logisticRegModel.predict(stroke_test_x)
+
+print("Uso de sklearn.linear_model-LogisticRegression")
+print(classification_report(stroke_test_y, predicciones))
+
+# Para poder obtener mejores resultados, en cuanto a las personas que si
+# son propensas a apoplejias, es necesario mover las metricas de la
+# regresion logistica para ver cual opcion seria mejor para este problema
+# en especifico.
