@@ -28,7 +28,6 @@
 # Importamos bibliotecas
 import modelos
 
-import time
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -163,7 +162,7 @@ theta_smoking = [1, 1, 1]
 
 alpha = 1e-5
 
-theta_smoking = modelos.regresion_logistica_bidim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=500, theta=theta_smoking)
+theta_smoking = modelos.regresion_logistica_bidim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=1000, theta=theta_smoking)
 
 # Impresion de resultados
 print("=============================================")
@@ -235,7 +234,7 @@ theta_residence = [1, 1]
 
 alpha = 1e-5
 
-theta_residence = modelos.regresion_logistica_unidim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=500, theta=theta_residence)
+theta_residence = modelos.regresion_logistica_unidim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=1000, theta=theta_residence)
 
 # Impresion de resultados
 print("=============================================")
@@ -305,7 +304,7 @@ theta_comb = [1, 1, 1, 1]
 
 alpha = 1e-5
 
-theta_comb = modelos.regresion_logistica_tridim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=500, theta=theta_comb)
+theta_comb = modelos.regresion_logistica_tridim(stroke_train_x, stroke_train_y, alpha=alpha, iteration=1000, theta=theta_comb)
 
 # Impresion de resultados
 print("=============================================")
