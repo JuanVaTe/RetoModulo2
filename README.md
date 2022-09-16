@@ -118,3 +118,9 @@ Es importante no casarse con solamente un tipo de modelo para resolver distintos
   
 Para poder obtener una vista mas detallada del proceso detras de escenas, puedes revisar el codigo [aqui](https://github.com/JuanVaTe/RetoModulo2/blob/main/RetoModulo2.py).  
 
+#### Mejoras a partir de la retroalimentacion
+
+- Creacion de documentacion en README.md
+- Creacion de documentacion en .pdf
+- Implementacion de predicciones explicitas
+- Conculsion del codigo
