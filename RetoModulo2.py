@@ -333,11 +333,21 @@ print(f"Exactitud     : {exactitud_comb}")
 print(f"Precision     : {precision_comb}")
 print(f"Exhaustividad : {exhaustividad_comb}")
 print(f"Puntaje F1    : {puntaje_F1_comb}")
-print("=============================================")
+print("=============================================\n\n")
 
 # Incluso utilizando diferentes caracteristicas, si el modelo sigue siendo simple,
 # vemos que tiene sus limitaciones. Para poder resolver y predecir complicaciones
 # como estas es necesario utilizar metodos mas optimos y poderosos.
+
+# Ya que el modelo mas complejo fue este ultimo, vamos a hacer unas predicciones para
+# verificar estos resultados
+
+for i in range(6):
+    print("Prediccion numero", i + 1, "======================")
+    print("Datos:", stroke_test_x.iloc[i])
+    print("Prediccion:", round(modelos.h3(stroke_test_x.iloc[i, 0], stroke_test_x.iloc[i, 1], stroke_test_x.iloc[i, 2], theta_comb), 2))
+    print("Realidad:", stroke_test_y.iloc[i])
+    print("=============================================")
 
 # Conclusion
 
