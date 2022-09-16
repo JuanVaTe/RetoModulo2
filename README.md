@@ -103,7 +103,14 @@ El resultado es el siguiente:
   
 ![](https://github.com/JuanVaTe/RetoModulo2/blob/main/Images/resultados_edad_fumadores.png?raw=true)  
   
-Incluso utilizando diferentes caracteristicas, si el modelo sigue siendo simple, vemos que tiene sus limitaciones. Para poder resolver y predecir complicaciones como estas es necesario utilizar metodos mas optimos y poderosos.  
+Incluso utilizando diferentes caracteristicas, si el modelo sigue siendo simple, vemos que tiene sus limitaciones. Para poder resolver y predecir complicaciones como estas es necesario utilizar metodos mas optimos y poderosos.
+
+## Predicciones :stars:  
+  
+Ya que el modelo mas complejo fue este ultimo, vamos a hacer unas predicciones para verificar estos resultados  
+  
+![](https://github.com/JuanVaTe/RetoModulo2/blob/main/Images/prediccion_1de2.png?raw=true)  
+![](https://github.com/JuanVaTe/RetoModulo2/blob/main/Images/prediccion_2de2.png?raw=true)
   
 ## Conclusion :heavy_check_mark:  
   
